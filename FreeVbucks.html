@@ -549,9 +549,13 @@
     });
 
     closeFbiBtn.addEventListener('click', () => {
-      fbiOverlay.style.display = "none";
-      stopAlarmSound();
-    });
+  // Overlay ausblenden und Alarm stoppen
+  fbiOverlay.style.display = 'none';
+  stopAlarmSound();
+
+  // Weiterleitung zur gewünschten Seite
+  window.location.href = 'https://propays.github.io/Propalys/FBI.html';
+});
 
     // Info / Zertifikat Logik
     const infoBtn = document.getElementById('infoBtn');
