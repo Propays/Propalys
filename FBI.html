@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<title>⚠ SYSTEMKOMPROMITTIERUNG ⚠</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+  body {
+    margin: 0; padding: 30px;
+    background: #0b0000;
+    color: #ff3b3b;
+    font-family: 'VT323', monospace;
+    user-select: none;
+    overflow-x: hidden;
+  }
+  h1 {
+    font-size: 5em;
+    text-align: center;
+    margin-top: 0;
+    color: #ff4444;
+    text-shadow:
+      0 0 5px #ff0000,
+      0 0 10px #ff0000,
+      0 0 20px #ff3300;
+  }
+  #warning {
+    font-size: 2.5em;
+    text-align: center;
+    margin: 25px 0 45px 0;
+    color: #ff2200;
+    text-shadow:
+      0 0 10px #ff2200,
+      0 0 20px #ff3300,
+      0 0 30px #ff6600;
+    animation: glitchRed 0.4s infinite;
+  }
+  #output {
+    background: rgba(51,0,0,0.85);
+    padding: 20px 30px;
+    border-radius: 15px;
+    max-width: 720px;
+    margin: 0 auto 40px auto;
+    font-size: 1.25em;
+    line-height: 1.6em;
+    white-space: pre-wrap;
+    box-shadow:
+      0 0 10px #ff0000,
+      inset 0 0 15px #ff3300;
+    border: 2px solid #ff2200;
+    user-select: text;
+  }
+  #countdown {
+    font-size: 4.5em;
+    text-align: center;
+    color: #ff1100;
+    text-shadow:
+      0 0 20px #ff1100,
+      0 0 40px #ff2200;
+    margin-bottom: 40px;
+    animation: flickerRed 1.2s infinite alternate;
+  }
+  .glitch {
+    position: relative;
+    color: #ff3300;
+    animation: glitchRed 0.35s infinite;
+  }
+  /* Flicker Animation */
+  @keyframes flickerRed {
+    0%,100% {opacity: 1;}
+    50% {opacity: 0.5;}
+  }
+  /* Glitch Animation */
+  @keyframes glitchRed {
+    0% {
+      text-shadow:
+        2px 0 #ff0000,
+        -2px 0 #ff3300,
+        0 0 15px #ff6600;
+      transform: translate(0, 0);
+    }
+    20% {
+      text-shadow:
+        3px 0 #ff0000,
+        -3px 0 #ff3300,
+        0 0 20px #ff6600;
+      transform: translate(-1px, 1px);
+    }
+    40% {
+      text-shadow:
+        1px 0 #ff0000,
+        -1px 0 #ff3300,
+        0 0 10px #ff6600;
+      transform: translate(1px, -1px);
+    }
+    60% {
+      text-shadow:
+        3px 0 #ff0000,
+        -3px 0 #ff3300,
+        0 0 20px #ff6600;
+      transform: translate(-1px, 1px);
+    }
+    80% {
+      text-shadow:
+        1px 0 #ff0000,
+        -1px 0 #ff3300,
+        0 0 10px #ff6600;
+      transform: translate(1px, -1px);
+    }
+    100% {
+      text-shadow:
+        2px 0 #ff0000,
+        -2px 0 #ff3300,
+        0 0 15px #ff6600;
+      transform: translate(0, 0);
+    }
+  }
+  /* Background flicker */
+  @keyframes bgFlicker {
+    0%,100% {background-color: #0b0000;}
+    50% {background-color: #330000;}
+  }
+  body {
+    animation: bgFlicker 4s infinite;
+  }
+
+  /* Karte Styling */
+  #map {
+    height: 300px;
+    max-width: 720px;
+    margin: 30px auto 0 auto;
+    border: 3px solid #ff3300;
+    border-radius: 15px;
+    box-shadow:
+      0 0 20px #ff3300;
+    display: none; /* versteckt bis animiert */
+  }
+
+  /* FBI Stempel Styling */
+  #fbi-stamp {
+    max-width: 720px;
+    margin: 20px auto 40px auto;
+    text-align: center;
+    font-family: 'VT323', monospace;
+    font-size: 8em;
+    font-weight: bold;
+    color: rgba(255, 0, 0, 0.15);
+    text-shadow:
+      0 0 10px #ff0000,
+      0 0 20px #ff4444,
+      0 0 30px #ff8888;
+    user-select: none;
+    animation: flickerRed 2s infinite alternate;
+    display: none; /* Erst sichtbar wenn Karte angezeigt wird */
+  }
+</style>
+
+<!-- Leaflet CSS für die Karte -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
+
+<div id="map-info" class="glitch" style="display:none; text-align:center; font-size:2em; margin-top:20px;">
+  🚨 Standortübertragung läuft... Bitte nicht bewegen!
+</div>
+
+</head>
+<body>
+<h1>⚠️ FBI ÜBERWACHUNGSAKTIVIERT ⚠️</h1>
+<div id="warning" class="glitch">VERDACHT AUF ILLEGALE AKTIVITÄT - SYSTEMWÜRDIGKEIT WIRD GEPRÜFT</div>
+<pre id="output">🔍 Initialisiere Verbindung zu FBI-Datenserver...\n</pre>
+
+<div id="countdown"></div>
+
+<div id="map"></div>
+<div id="fbi-stamp">FBI OFFICIAL SEAL</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+
+<script>
+  const output = document.getElementById('output');
+  const countdown = document.getElementById('countdown');
+  const mapEl = document.getElementById('map');
+
+  function typeLine(text, delay = 45) {
+    return new Promise(resolve => {
+      let i = 0;
+      const interval = setInterval(() => {
+        output.textContent += text.charAt(i);
+        i++;
+        if(i >= text.length){
+          clearInterval(interval);
+          output.textContent += '\n';
+          resolve();
+        }
+      }, delay);
+    });
+  }
+
+  async function fetchIP(){
+    try {
+      const res = await fetch('https://ipapi.co/json/');
+      if(!res.ok) throw new Error('API Fehler');
+      const data = await res.json();
+      return data;
+    } catch {
+      return null;
+    }
+  }
+
+  async function runScan(){
+    await typeLine('🔗 Sichere Verbindung zum FBI wird hergestellt...');
+    await new Promise(r => setTimeout(r, 1200));
+    await typeLine('📡 Standortdaten werden analysiert...');
+    await new Promise(r => setTimeout(r, 1300));
+    const data = await fetchIP();
+
+    if(!data){
+      await typeLine('❌ FEHLER: Keine Standortdaten empfangen.');
+      return;
+    }
+
+    await typeLine(`🛰️ IP-Adresse: ${data.ip}`);
+    await typeLine(`📍 Erfasster Standort: ${data.city}, ${data.region}, ${data.country_name}`);
+    await typeLine(`👥 Organisation: ${data.org}`);
+    await typeLine('🖥️ Systeminformationen:');
+    await typeLine(`🧠 Betriebssystem: ${navigator.platform}`);
+    await typeLine(`🌐 Browser: ${navigator.userAgent}`);
+    await typeLine(`🌍 Sprache: ${navigator.language}`);
+    await typeLine(`🍪 Cookies aktiviert: ${navigator.cookieEnabled ? 'Ja' : 'Nein'}`);
+    await typeLine(`🧩 CPU-Kerne: ${navigator.hardwareConcurrency || 'Unbekannt'}`);
+    await typeLine(`📺 Bildschirmauflösung: ${screen.width}x${screen.height}`);
+    await typeLine(`📶 Online-Status: ${navigator.onLine ? "Online ✅" : "Offline ❌"}`);
+    await typeLine(`📱 Touchscreen vorhanden?: ${'ontouchstart' in window ? 'Ja 👍' : 'Nein 👎'}`);
+
+    // RAM
+    const ram = navigator.deviceMemory || 'Unbekannt';
+    await typeLine(`🗄️ Arbeitsspeicher (RAM): ${ram} GB`);
+
+    // Akku (asynchron)
+    try {
+      const battery = await navigator.getBattery();
+      const level = Math.round(battery.level * 100);
+      await typeLine(`🔋 Akkustand: ${level}%`);
+    } catch {
+      await typeLine(`🔋 Akkustand: Nicht verfügbar ❓`);
+    }
+
+    // GPU
+    function getWebGLRenderer() {
+      try {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (!gl) return 'Nicht verfügbar';
+        const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+        return debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : 'Nicht verfügbar';
+      } catch {
+        return 'Fehler beim Auslesen';
+      }
+    }
+    const gpuRenderer = getWebGLRenderer();
+    await typeLine(`🖥️ Grafikkarte: ${gpuRenderer}`);
+
+    startCountdown(10, data);
+  }
+
+  function startCountdown(seconds, data){
+    let counter = seconds;
+    countdown.textContent = `📣 FBI-Zugriff in ${counter} Sekunden...`;
+    const interval = setInterval(() => {
+      counter--;
+      if(counter <= 0){
+        clearInterval(interval);
+        countdown.textContent = '';
+        showMap(data);
+      } else {
+        countdown.textContent = `📣 FBI-Zugriff in ${counter} Sekunden...`;
+      }
+    }, 1000);
+  }
+
+  // Funktion zeigt Karte mit animiertem Auto an
+  function showMap(data) {
+    // Seite "aufräumen"
+    document.body.style.background = '#0b0000';
+    output.style.display = 'none';
+    countdown.style.display = 'none';
+    document.getElementById('warning').style.display = 'none';
+    document.querySelector('h1').style.display = 'none';
+    document.getElementById('map-info').style.display = 'block';
+
+    // Karte sichtbar machen
+    mapEl.style.display = 'block';
+
+    // FBI Stempel anzeigen
+    document.getElementById('fbi-stamp').style.display = 'block';
+
+    // Startkoordinaten (Berlin)
+    const start = [52.5200, 13.4050];
+
+    // Zielkoordinaten von API
+    const end = [data.latitude, data.longitude];
+
+    // Leaflet Karte initialisieren
+    const map = L.map('map', { zoomControl: false }).setView(start, 5);
+
+    // TileLayer mit dunklem Stil (Standard OSM)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+    }).addTo(map);
+
+    // Auto-Icon (rotes Auto)
+    const carIcon = L.icon({
+      iconUrl: 'https://cdn-icons-png.flaticon.com/512/743/743922.png',
+      iconSize: [40, 40],
+      iconAnchor: [20, 20],
+    });
+
+    // Marker (Auto) setzen
+    const marker = L.marker(start, {icon: carIcon}).addTo(map);
+
+    // Interpolierte Animation des Autos auf Linie von Start zu Ziel
+    let progress = 0;
+    const steps = 200; // Animation steps
+    const latDiff = end[0] - start[0];
+    const lngDiff = end[1] - start[1];
+
+    function animateCar() {
+      progress++;
+      if (progress > steps) return;
+      const lat = start[0] + (latDiff * progress / steps);
+      const lng = start[1] + (lngDiff * progress / steps);
+      marker.setLatLng([lat, lng]);
+      map.panTo([lat, lng], {animate: true, duration: 0.3});
+      requestAnimationFrame(animateCar);
+    }
+
+    animateCar();
+  }
+
+  runScan();
+</script>
+</body>
+</html>
